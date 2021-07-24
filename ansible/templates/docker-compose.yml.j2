@@ -1,0 +1,21 @@
+version: "3"
+services:
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: {{ansible_hostname}}
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_NODENAME=rabbit@{{ansible_hostname}}
+      - RABBITMQ_DEFAULT_USER={{rabbitmq_username}}
+      - RABBITMQ_DEFAULT_PASS={{rabbitmq_password}}
+      - RABBITMQ_ERLANG_COOKIE={{rabbitmq_cookie}}
+    network_mode: host
+    hostname: {{ansible_hostname}}
+    volumes:
+        - data:/var/lib/rabbitmq/
+        - log:/var/log/rabbitmq
+
+volumes:
+  data:
+  log:

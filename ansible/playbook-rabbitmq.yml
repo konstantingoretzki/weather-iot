@@ -1,0 +1,57 @@
+- hosts: rabbitmq-server
+  user: ubuntu
+  become: yes
+  vars:
+    - rabbitmq_username: hs-albsig
+    - rabbitmq_password: hs-albsig
+    - rabbitmq_cookie: HierRandomStringEinfuegen
+
+  tasks:
+  - name: Update repositories cache (apt-get update)
+    apt:
+      update_cache: yes
+
+  - name: Upgrade the OS (apt-get upgrade)
+    apt:
+      upgrade: yes
+
+  - name: Install docker and docker-compose
+    apt:
+      name: ["docker.io", "docker-compose"]    
+
+  - name: Remove useless packages from the cache (apt-get autoclean)
+    apt:
+      autoclean: yes
+
+  - name: Remove dependencies that are no longer required (apt-get autoremove)
+    apt:
+      autoremove: yes
+
+  - name: Create directory for docker-compose
+    ansible.builtin.file:
+      path: /home/ubuntu/docker-compose/rabbitmq/
+      state: directory
+      mode: '0775'
+
+  - name: Add docker-compose.yml for RabbitMQ
+    ansible.builtin.template:
+      src: templates/docker-compose.yml.j2
+      dest: /home/ubuntu/docker-compose/rabbitmq/docker-compose.yml
+      mode: '0775'
+
+  - name: Start RabbitMQ Docker container
+    shell: sudo docker-compose up -d
+    args:
+      chdir: /home/ubuntu/docker-compose/rabbitmq/                       
+
+  - name: Update /etc/hosts
+    blockinfile:
+        path: /etc/hosts
+        create: yes
+        block: |
+
+          {% for item in hostvars %}
+          {{ hostvars[item].ansible_host }}   {{ item }}    
+          {% endfor %}
+
+

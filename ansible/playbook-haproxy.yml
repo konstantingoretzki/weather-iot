@@ -1,0 +1,46 @@
+- hosts: haproxy-server
+  user: ubuntu
+  become: yes
+
+  tasks:
+  - name: Update repositories cache (apt-get update)
+    apt:
+      update_cache: yes
+
+  - name: Upgrade the OS (apt-get upgrade)
+    apt:
+      upgrade: yes
+
+  - name: Install haproxy
+    apt:
+      name: ["haproxy"]    
+
+  - name: Remove useless packages from the cache (apt-get autoclean)
+    apt:
+      autoclean: yes
+
+  - name: Remove dependencies that are no longer required (apt-get autoremove)
+    apt:
+      autoremove: yes
+
+  - name: Add config file for haproxy
+    ansible.builtin.template:
+      src: templates/haproxy.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+      mode: '0775'
+
+  - name: Update /etc/hosts
+    blockinfile:
+        path: /etc/hosts
+        create: yes
+        block: |
+
+          {% for item in hostvars %}
+          {{ hostvars[item].ansible_host }}   {{ item }}    
+          {% endfor %}
+
+  - name: Restart haproxy
+    systemd:
+      state: restarted
+      enabled: yes
+      name: haproxy                             

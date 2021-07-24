@@ -1,0 +1,1 @@
+# Internet & Security of Things - Verarbeiten von Wetterdaten mit einem RabbitMQ-Cluster

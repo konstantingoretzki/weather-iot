@@ -53,5 +53,17 @@
           {% for item in hostvars %}
           {{ hostvars[item].ansible_host }}   {{ item }}    
           {% endfor %}
+          
+  - name: Stop RabbitMQ App
+    shell: docker exec {{ansible_hostname}} rabbitmqctl stop_app
+    when: ansible_hostname != "mq1"
+
+  - name: Join first RabbitMQ node
+    shell: docker exec {{ansible_hostname}} rabbitmqctl join_cluster rabbit@mq1
+    when: ansible_hostname != "mq1"
+
+  - name: Start RabbitMQ App
+    shell: docker exec {{ansible_hostname}} rabbitmqctl start_app
+    when: ansible_hostname != "mq1"          
 
 
